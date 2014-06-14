@@ -29,6 +29,12 @@ func gitClone(path string, giturl string) {
 	cmd.Run()
 }
 
+func gitUpdate(path string,repo string) {
+	cmd := exec.Command("git","pull")
+	cmd.Dir = path + "/" + repo
+	cmd.Run()
+}
+
 func gitSetUpstream(path string,repo string,upstreamurl string) {
 	cmd := exec.Command("git","remote","add","upstream",upstreamurl)
 	cmd.Dir = path + "/" + repo
@@ -38,6 +44,7 @@ func gitSetUpstream(path string,repo string,upstreamurl string) {
 func main() {
 	flag.Parse()
 	var tokenPath = flag.String("token","./github-token","path to file containing your github API token")
+	var update = flag.Bool("update",false,"run updates on all repos")
 	people := flag.Args()
 	tokf,_ := os.Open(*tokenPath)
 	scan := bufio.NewScanner(tokf)
@@ -56,7 +63,13 @@ func main() {
 		repos,_,_ := client.Repositories.List(person,nil)
 		for _,repo := range repos {
 			if gitRepoExists(path,*repo.Name) {
-				fmt.Printf("Repository %v already cloned\n",*repo.FullName)
+				if *update {
+					fmt.Printf("Updating %v ...",*repo.FullName)
+					gitUpdate(path,*repo.Name)
+					fmt.Printf("done\n")
+				} else {
+					fmt.Printf("Repository %v already cloned\n",*repo.FullName)
+				}
 				continue
 			}
 			fmt.Printf("Cloning repository %v...",*repo.FullName)
