@@ -42,9 +42,9 @@ func gitSetUpstream(path string,repo string,upstreamurl string) {
 }
 
 func main() {
-	flag.Parse()
 	var tokenPath = flag.String("token","./github-token","path to file containing your github API token")
 	var update = flag.Bool("update",false,"run updates on all repos")
+	flag.Parse()
 	people := flag.Args()
 	tokf,_ := os.Open(*tokenPath)
 	scan := bufio.NewScanner(tokf)
@@ -52,7 +52,6 @@ func main() {
 	for scan.Scan() {
 		token += strings.TrimSpace(scan.Text())
 	}
-	fmt.Println(token)
 	t := &oauth.Transport{
 		Token : &oauth.Token{AccessToken: token},
 	}
