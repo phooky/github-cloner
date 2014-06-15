@@ -56,11 +56,15 @@ func main() {
 		Token : &oauth.Token{AccessToken: token},
 	}
 	client := github.NewClient(t.Client())
+	opt := &github.RepositoryListOptions{
+		ListOptions: github.ListOptions{PerPage: 100,},
+	}
 	for _,person := range people {
 		path := expandTilde("~/Repos/"+person)
 		os.MkdirAll(path,0755)
-		repos,_,_ := client.Repositories.List(person,nil)
+		repos,_,_ := client.Repositories.List(person,opt)
 		for _,repo := range repos {
+			fmt.Printf("REPO %v:",*repo.Name)
 			if gitRepoExists(path,*repo.Name) {
 				if *update {
 					fmt.Printf("Updating %v ...",*repo.FullName)
@@ -72,7 +76,7 @@ func main() {
 				continue
 			}
 			fmt.Printf("Cloning repository %v...",*repo.FullName)
-			gitClone(path,*repo.GitURL)
+			gitClone(path,*repo.SSHURL)
 			if (*repo.Fork) {
 				repo,_,_ := client.Repositories.Get(person,*repo.Name)
 				parent := *repo.Parent
